@@ -23,7 +23,7 @@ type Board struct {
 func renderSea(sea [10][10]uint8, cellMap map[uint8]rune) (string, error) {
 
 	var seaText strings.Builder
-	seaText.WriteString("--- A  B  C  D  E  F  G  H  I  J -\n")
+	seaText.WriteString("=== A  B  C  D  E  F  G  H  I  J =\n")
 	for i := range sea {
 		var row string = strconv.Itoa(i)
 		seaText.WriteString(row)
@@ -40,21 +40,9 @@ func renderSea(sea [10][10]uint8, cellMap map[uint8]rune) (string, error) {
 		}
 		seaText.WriteString("-\n")
 	}
-	seaText.WriteString("--------------------------------\n")
+	seaText.WriteString("==================================\n")
 
 	return seaText.String(), nil
-}
-
-func fire(sea *[10][10]uint8, y uint8, x uint8) error {
-	var effectMap = map[uint8]uint8{0: 1, 1: 1, 2: 3, 3: 3}
-	var newVal, valid = effectMap[sea[y][x]]
-	if !valid {
-		return errors.New("Invalid cell value for sea")
-	}
-
-	sea[y][x] = newVal
-
-	return nil
 }
 
 func (b Board) printBoard() {
@@ -77,6 +65,18 @@ func (b Board) printBoard() {
 	fmt.Printf("OUR SEA\n%v", seaStr)
 }
 
+func Fire(sea *[10][10]uint8, y uint8, x uint8) error {
+	var effectMap = map[uint8]uint8{0: 1, 1: 1, 2: 3, 3: 3}
+	var newVal, valid = effectMap[sea[y][x]]
+	if !valid {
+		return errors.New("Invalid cell value for sea")
+	}
+
+	sea[y][x] = newVal
+
+	return nil
+}
+
 func main() {
 	var b Board
 
@@ -85,9 +85,9 @@ func main() {
 	b.ourSea[3][8] = 3 // ship at I3
 	b.printBoard()
 
-	_ = fire(&b.ourSea, 1, 2)
-	_ = fire(&b.ourSea, 4, 1)
-	_ = fire(&b.ourSea, 3, 8)
-	_ = fire(&b.ourSea, 0, 0)
+	_ = Fire(&b.ourSea, 1, 2)
+	_ = Fire(&b.ourSea, 4, 1)
+	_ = Fire(&b.ourSea, 3, 8)
+	_ = Fire(&b.ourSea, 0, 0)
 	b.printBoard()
 }
