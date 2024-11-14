@@ -3,6 +3,8 @@ package main
 import (
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 )
 
 type Board struct {
@@ -18,18 +20,29 @@ type Board struct {
 	whoseTurn bool
 }
 
-func printSea(sea [10][10]uint8, cellMap map[uint8]rune) {
+func renderSea(sea [10][10]uint8, cellMap map[uint8]rune) (string, error) {
 
-	fmt.Printf("--- A  B  C  D  E  F  G  H  I  J -\n")
+	var seaText strings.Builder
+	seaText.WriteString("--- A  B  C  D  E  F  G  H  I  J -\n")
 	for i := range sea {
-		fmt.Printf("%v -", i)
+		var row string = strconv.Itoa(i)
+		seaText.WriteString(row)
+		seaText.WriteString(" -")
 		for j := range sea {
-			var cellRune = cellMap[sea[i][j]]
-			fmt.Printf(" %c ", cellRune)
+			var cellRune, valid = cellMap[sea[i][j]]
+			if !valid {
+				return "", errors.New("Invalid cell value for sea")
+			}
+
+			seaText.WriteString(" ")
+			seaText.WriteRune(cellRune)
+			seaText.WriteString(" ")
 		}
-		fmt.Printf("-\n")
+		seaText.WriteString("-\n")
 	}
-	fmt.Printf("--------------------------------\n")
+	seaText.WriteString("--------------------------------\n")
+
+	return seaText.String(), nil
 }
 
 func fire(sea *[10][10]uint8, y uint8, x uint8) error {
@@ -49,11 +62,19 @@ func (b Board) printBoard() {
 	// to its visual representation
 	var cellMap = map[uint8]rune{0: '~', 1: 'M', 2: 'S', 3: 'H'}
 
-	fmt.Printf("ENEMY SEA\n")
-	printSea(b.enemySea, cellMap)
+	seaStr, err := renderSea(b.enemySea, cellMap)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+	fmt.Printf("ENEMY SEA\n%v", seaStr)
 
-	fmt.Printf("OUR SEA\n")
-	printSea(b.ourSea, cellMap)
+	seaStr, err = renderSea(b.ourSea, cellMap)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+	fmt.Printf("OUR SEA\n%v", seaStr)
 }
 
 func main() {
