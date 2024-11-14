@@ -4,10 +4,9 @@ We need to be able to send/receive fires, hits, and misses at certain board posi
 
 In general, we use `:` as delimiters and `_` followed by a letter followed by another `_` to indicate data types
 
-### Components
+### Components Types -- Messages may contain these
 
 #### Board Position
-indicated by a `p`
 contains a row (letter) and column (integer)
 - Row: \[A-J\]
 - Column: \[1-10\]
@@ -21,7 +20,7 @@ consists of a single integer
 ### Message Type
 
 #### Positional Messages
-format -- `_type_position` where the position value doesn't have the normal `_p_` type indicator
+format -- `_type_position` 
 - type is in lowercase letters
 example: `_h_A-7:` -- hit on A7
 
@@ -33,7 +32,6 @@ types:
 #### Ship Messages
 sank -- `a` (for abyss)
 - example: `_a_10:` -- sank ship # 10
-    - `_s_` 
 
 #### Game State Messages
 `g` for game

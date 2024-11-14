@@ -1,4 +1,4 @@
-package main
+package sloopGame
 
 import (
 	"errors"
@@ -75,19 +75,4 @@ func Fire(sea *[10][10]uint8, y uint8, x uint8) error {
 	sea[y][x] = newVal
 
 	return nil
-}
-
-func main() {
-	var b Board
-
-	b.ourSea[1][2] = 1 // miss at C1
-	b.ourSea[4][1] = 2 // hit at B4
-	b.ourSea[3][8] = 3 // ship at I3
-	b.printBoard()
-
-	_ = Fire(&b.ourSea, 1, 2)
-	_ = Fire(&b.ourSea, 4, 1)
-	_ = Fire(&b.ourSea, 3, 8)
-	_ = Fire(&b.ourSea, 0, 0)
-	b.printBoard()
 }

@@ -1,4 +1,4 @@
-package sloop
+package sloopGame
 
 import (
 	"testing"
