@@ -28,7 +28,7 @@ func main() {
 func handleJoin(conn net.Conn) {
 	// close the connection when we're done
 	// this might not be appropriate to have here depending on architecture
-	conn.Write([]byte("Hello Client!"))
+	conn.Write([]byte("_g_begin"))
 	defer conn.Close()
 
 	// play a game against an AI, which runs on the server
