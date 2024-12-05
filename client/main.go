@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"net"
 	// "github.com/scrmbld/battlesloop-go/sloopGame"
 	"github.com/scrmbld/battlesloop-go/sloopNet"
+	"net"
 )
 
 func main() {
@@ -22,15 +22,18 @@ func main() {
 	_, err = conn.Read(buf)
 	if err != nil {
 		fmt.Println(err)
+		conn.Close()
 		return
 	}
 
-	var msg = string(buf[:])
-	t, err := sloopNet.GetType(msg)
+	// parse the message
+	msg, err := sloopNet.ParseMsgs(string(buf))
 	if err != nil {
 		fmt.Println(err)
+		conn.Close()
 		return
 	}
+	fmt.Printf("%s\n", msg)
 
 	if t == "c" {
 		conn_msg, err := sloopNet.ParseConn(msg)
