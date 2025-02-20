@@ -13,7 +13,7 @@ contains a row (letter) and column (integer)
 
 in messages, takes the form: `<row>-<column>:`
 
-#### Ship Type
+#### Ship Identifier
 consists of a single integer
 `<int>:`
 
@@ -36,16 +36,23 @@ sank -- `a` (for abyss)
 #### Game State Messages
 `g` for game
 
-win, lose, end (no contest, game ending for some other reason)
+win, lose, end (no contest or game ending for some other reason)
 `_g_win:`
 `_g_lose:`
 `_g_end:`
 
+I want to go first, I want to go second, I don't have a preference
+`_g_first:`
+`_g_last:`
+`_g_undecided:`
+
+Ready to begin next phase of the game (i.e., go from ship placement -> firing)
+`_g_ready:`
+
 #### Connection-Related Messages
 `c` for connection
 
-begin, end, heartbeat, your turn, my turn
-`_c_begin:`
+end, heartbeat, your turn, my turn
 `_c_end:`
 `_c_mturn:`
 `_c_yturn:`

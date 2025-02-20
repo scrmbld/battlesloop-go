@@ -7,13 +7,48 @@ import (
 	"strings"
 )
 
+// Intended to hold the size, location, and status (i.e., sunk or not sunk) of a ship
+type Ship struct {
+	sunk        bool
+	size        uint8
+	orientation bool
+	health      uint8
+	y           uint8
+	x           uint8
+}
+
+func newShip(y uint8, x uint8, size uint8, orientation bool) Ship {
+	var ship Ship
+	ship.sunk = false
+	ship.size = size
+	ship.health = size
+	ship.orientation = orientation
+	ship.y = y
+	ship.x = x
+
+	return ship
+}
+
+// returns true if the given coordinate contain part of the ship, false otherwise
+func (self *Ship) Covers(y uint8, x uint8) bool {
+	end_y := self.y
+	end_x := self.x
+	if self.orientation {
+		end_y = y + self.size
+	} else {
+		end_x = x + self.size
+	}
+
+	return y >= self.y && y <= end_y && x >= self.x && x <= end_x
+}
+
 type Board struct {
 	// uints represent state of each cell
 	// 0: empty, 1: miss, 2: ship (not hit), 3: hit
 	OurSea   [10][10]uint8
 	EnemySea [10][10]uint8
-	// uints represent "health" of ships (aka their length)
-	OurFleet []uint8
+	// uints represent size of ships (aka their length on the board)
+	OurFleet []Ship
 	// do not track enemy fleet -- opponent will tell us when we win
 
 	// True: our turn, False: enemy turn
@@ -113,6 +148,9 @@ func (b *Board) PlaceShip(origin_y int, origin_x int, size int, orientation bool
 
 		b.OurSea[y][x] = 2
 	}
+
+	ship := newShip(uint8(origin_y), uint8(origin_x), uint8(size), orientation)
+	b.OurFleet = append(b.OurFleet, ship)
 
 	return nil
 }

@@ -70,14 +70,14 @@ func TestParsePos(t *testing.T) {
 
 func TestParseMsgs(t *testing.T) {
 
-	var message string = "_g_begin:_f_A-7"
+	var message string = "_g_begin:_f_A-7:"
 	result, err := ParseMsgs(message)
 	expected := [][]string{{"g", "begin"}, {"f", "A-7"}}
 	if !msgEq(expected, result) || err != nil {
 		t.Fatalf("ParseMsgs(%s) returned %v, %v | expected %v, %v", message, result, err, expected, nil)
 	}
 
-	message = "_g_begin"
+	message = "_g_begin:"
 	result, err = ParseMsgs(message)
 	expected = [][]string{{"g", "begin"}}
 	if !msgEq(expected, result) || err != nil {
@@ -85,24 +85,25 @@ func TestParseMsgs(t *testing.T) {
 	}
 
 	// some invalid messages
-	message = "begin"
+	message = "begin:"
 	result, err = ParseMsgs(message)
 	expected = [][]string{}
 	if !msgEq(expected, result) || err == nil {
 		t.Fatalf("ParseMsgs(%s) returned %v, %v | expected %v, Invalid message: has no type or too many types", message, result, err, expected)
 	}
 
-	message = "_g__f_begin"
+	message = "_g__f_begin:"
 	result, err = ParseMsgs(message)
 	expected = [][]string{}
 	if !msgEq(expected, result) || err == nil {
 		t.Fatalf("ParseMsgs(%s) returned %v, %v | expected %v, Invalid message: has no type or too many types", message, result, err, expected)
 	}
 
-	message = "_g_begin:"
+	message = "_g_begin"
 	result, err = ParseMsgs(message)
 	expected = [][]string{}
 	if !msgEq(expected, result) || err == nil {
-		t.Fatalf("ParseMsgs(%s) returned %v, %v | expected %v, Invalid message: has no type or too many types", message, result, err, expected)
+		t.Fatalf("ParseMsgs(%s) returned %v, %v | expected %v, Invalid message: last message not delimited", message, result, err, expected)
 	}
+
 }
