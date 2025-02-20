@@ -47,6 +47,128 @@ func TestFire(t *testing.T) {
 	}
 }
 
+func TestPlaceShip(t *testing.T) {
+	var board Board
+	var empty_sea [10][10]uint8
+
+	// test bounds checking
+	// in bounds
+	correct_sea := empty_sea
+	correct_sea[0][0] = 2
+	err := board.PlaceShip(0, 0, 1, false)
+	if err != nil {
+		t.Fatalf("board.PlaceShip(0, 0, 1, false) | returned %v, should be nil", err)
+	} else if board.OurSea != correct_sea {
+		t.Fatalf("board.PlaceShip(0, 0, 1, false) | gave board.OurSea of %v, should be %v", board.OurSea, correct_sea)
+	}
+	board.OurSea = empty_sea
+
+	// in bounds
+	correct_sea = empty_sea
+	correct_sea[9][9] = 2
+	err = board.PlaceShip(9, 9, 1, false)
+	if err != nil {
+		t.Fatalf("board.PlaceShip(9, 9, 1, false) | returned %v, should be nil", err)
+	} else if board.OurSea != correct_sea {
+		t.Fatalf("board.PlaceShip(9, 9, 1, false) | gave board.OurSea of %v, should be %v", board.OurSea, correct_sea)
+	}
+	board.OurSea = empty_sea
+
+	// in bounds
+	correct_sea = empty_sea
+	correct_sea[9][8] = 2
+	correct_sea[9][9] = 2
+	err = board.PlaceShip(9, 8, 2, false)
+	if err != nil {
+		t.Fatalf("board.PlaceShip(9, 8, 2, false) | returned %v, should be nil", err)
+	} else if board.OurSea != correct_sea {
+		t.Fatalf("board.PlaceShip(9, 8, 2, false) | gave board.OurSea of %v, should be %v", board.OurSea, correct_sea)
+	}
+	board.OurSea = empty_sea
+
+	// in bounds
+	correct_sea = empty_sea
+	correct_sea[9][9] = 2
+	correct_sea[8][9] = 2
+	err = board.PlaceShip(8, 9, 2, true)
+	if err != nil {
+		t.Fatalf("board.PlaceShip(8, 9, 2, true) | returned %v, should be nil", err)
+	} else if board.OurSea != correct_sea {
+		t.Fatalf("board.PlaceShip(8, 9, 2, true) | gave board.OurSea of %v, should be %v", board.OurSea, correct_sea)
+	}
+	board.OurSea = empty_sea
+
+	// out of bounds -- y too small
+	err = board.PlaceShip(-1, 1, 1, false)
+	if err == nil {
+		t.Fatalf("board.PlaceShip(-1, 1, 1, false) | returned %v, should be error", err)
+	} else if board.OurSea != empty_sea {
+		t.Fatalf("board.PlaceShip(-1, 1, 1, false) | gave board.OurSea of %v, should be %v", board.OurSea, empty_sea)
+	}
+
+	// out of bounds -- x too small
+	err = board.PlaceShip(1, -1, 1, false)
+	if err == nil {
+		t.Fatalf("board.PlaceShip(1, -1, 1, false) | returned %v, should be error", err)
+	} else if board.OurSea != empty_sea {
+		t.Fatalf("board.PlaceShip(1, -1, 1, false) | gave board.OurSea of %v, should be %v", board.OurSea, empty_sea)
+	}
+
+	// out of bounds -- y too big
+	err = board.PlaceShip(10, 1, 1, false)
+	if err == nil {
+		t.Fatalf("board.PlaceShip(10, 1, 1, false) | returned %v, should be error", err)
+	} else if board.OurSea != empty_sea {
+		t.Fatalf("board.PlaceShip(10, 1, 1, false) | gave board.OurSea of %v, should be %v", board.OurSea, empty_sea)
+	}
+
+	// out of bounds -- x too big
+	err = board.PlaceShip(1, 10, 1, false)
+	if err == nil {
+		t.Fatalf("board.PlaceShip(1, 10, 1, false) | returned %v, should be error", err)
+	} else if board.OurSea != empty_sea {
+		t.Fatalf("board.PlaceShip(1, 10, 1, false) | gave board.OurSea of %v, should be %v", board.OurSea, empty_sea)
+	}
+
+	// out of bounds -- off the bottom
+	err = board.PlaceShip(7, 0, 4, true)
+	if err == nil {
+		t.Fatalf("board.PlaceShip(7, 0, 4, false) | returned %v, should be error", err)
+	} else if board.OurSea != empty_sea {
+		t.Fatalf("board.PlaceShip(7, 0, 4, false) | gave board.OurSea of %v, should be %v", board.OurSea, empty_sea)
+	}
+
+	// out of bounds -- off the right
+	err = board.PlaceShip(0, 7, 4, false)
+	if err == nil {
+		t.Fatalf("board.PlaceShip(0, 7, 4, false) | returned %v, should be error", err)
+	} else if board.OurSea != empty_sea {
+		t.Fatalf("board.PlaceShip(0, 7, 4, false) | gave board.OurSea of %v, should be %v", board.OurSea, empty_sea)
+	}
+
+	// test intersections
+	// illegal, as there is an intersection
+	err = board.PlaceShip(2, 2, 3, true) // starting at 2, 2 going down
+	if err != nil {
+		t.Fatalf("board.PlaceShip(2, 2, 3, true) | returned %v, should be nil", err)
+	}
+	err = board.PlaceShip(2, 1, 3, false) // starting at 2, 1 going right (should intersect)
+	if err == nil {
+		t.Fatalf("board.PlaceShip(2, 1, 3, false) | returned %v, should be error (intersection)", err)
+	}
+	board.OurSea = empty_sea
+
+	// legal, as there is no intersection
+	err = board.PlaceShip(2, 2, 3, true) // starting at 2, 2 going down
+	if err != nil {
+		t.Fatalf("board.PlaceShip(2, 2, 3, true) | returned %v, should be nil", err)
+	}
+	err = board.PlaceShip(2, 1, 3, true) // starting at 2, 1 going down
+	if err != nil {
+		t.Fatalf("board.PlaceShip(2, 2, 3, true) | returned %v, should be nil", err)
+	}
+}
+
 // not sure if I want to unit test this component, since it defines UI appearance
 // So im just gonna put it off for later
 // func TestRenderSea(t* testing.T) {
