@@ -42,6 +42,11 @@ func (self *Ship) Covers(y uint8, x uint8) bool {
 	return y >= self.y && y <= end_y && x >= self.x && x <= end_x
 }
 
+func (self *Ship) Damage() {
+	self.health -= 1
+	self.sunk = self.health <= 0
+}
+
 type Board struct {
 	// uints represent state of each cell
 	// 0: empty, 1: miss, 2: ship (not hit), 3: hit
@@ -155,7 +160,7 @@ func (b *Board) PlaceShip(origin_y int, origin_x int, size int, orientation bool
 	return nil
 }
 
-func Fire(sea *[10][10]uint8, y uint8, x uint8) error {
+func fire(sea *[10][10]uint8, y uint8, x uint8) error {
 	var effectMap = map[uint8]uint8{0: 1, 1: 1, 2: 3, 3: 3}
 	var newVal, valid = effectMap[sea[y][x]]
 	if !valid {
@@ -165,4 +170,36 @@ func Fire(sea *[10][10]uint8, y uint8, x uint8) error {
 	sea[y][x] = newVal
 
 	return nil
+}
+
+// Update our sea with the new attack, and check if it damaged any of our ships.
+// Returns true on hit, false on miss.
+func (self *Board) FireFriendly(y uint8, x uint8) (bool, error) {
+	if y < 0 || y > 9 || x < 0 || x > 9 {
+		return false, errors.New("Coordinates out of bounds")
+	}
+	err := fire(&self.OurSea, y, x)
+	if err != nil {
+		return false, err
+	}
+	// check if any of our ships were hit
+	for i := 0; i < len(self.OurFleet); i++ {
+		if self.OurFleet[i].Covers(y, x) {
+			self.OurFleet[i].health -= 1
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+// Checks if we have lost.
+// Since we don't actually have the opponents fleet, we rely on them to report a victory.
+func (self *Board) CheckLoss() bool {
+	for _, v := range self.OurFleet {
+		if !v.sunk {
+			return false
+		}
+	}
+	return true
 }

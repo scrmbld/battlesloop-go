@@ -149,6 +149,34 @@ func ParsePos(pos string) ([2]uint8, error) {
 
 }
 
+// Given two ints, return the string representation of the position they equate to.
+func PosFromInts(y int, x int) (string, error) {
+	var colMap = map[int]string{
+		0: "A",
+		1: "B",
+		2: "C",
+		3: "D",
+		4: "E",
+		5: "F",
+		6: "G",
+		7: "H",
+		8: "I",
+		9: "J",
+	}
+
+	col, valid := colMap[x]
+	if !valid {
+		return "", errors.New("Column number out of range")
+	}
+
+	if y < 0 || y > 9 {
+		return "", errors.New("Row number out of range")
+	}
+
+	posString := col + "-" + strconv.Itoa(y)
+	return posString, nil
+}
+
 // Parse a string that contains battlesloop messages
 // Turns each message into a slice of strings, split by "_"'s
 // There's no way to be sure that a socket will only return one message,
