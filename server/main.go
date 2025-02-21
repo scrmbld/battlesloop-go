@@ -129,11 +129,11 @@ func oppTurn(connection *sloopNet.GameConn, board *sloopGame.Board) (int, error)
 		}
 
 		if hit {
-			fmt.Printf("Opponent hit %v\n", pos)
+			fmt.Printf("Opponent hit %v%v\n", msg[1][:1], msg[1][2:])
 			// tell the opponent that they hit
 			connection.SendMsg("_h_" + msg[1] + ":")
 		} else {
-			fmt.Printf("Opponent missed %v\n", pos)
+			fmt.Printf("Opponent missed %v%v\n", msg[1][:1], msg[1][2:])
 			// tell the opponent that they missed
 			connection.SendMsg("_m_" + msg[1] + ":")
 		}
