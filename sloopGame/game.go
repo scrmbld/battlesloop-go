@@ -9,7 +9,7 @@ import (
 
 // Intended to hold the size, location, and status (i.e., sunk or not sunk) of a ship
 type Ship struct {
-	sunk        bool
+	Sunk        bool
 	size        uint8
 	orientation bool
 	health      uint8
@@ -19,7 +19,7 @@ type Ship struct {
 
 func newShip(y uint8, x uint8, size uint8, orientation bool) Ship {
 	var ship Ship
-	ship.sunk = false
+	ship.Sunk = false
 	ship.size = size
 	ship.health = size
 	ship.orientation = orientation
@@ -34,9 +34,9 @@ func (self *Ship) Covers(y uint8, x uint8) bool {
 	end_y := self.y
 	end_x := self.x
 	if self.orientation {
-		end_y = y + self.size
+		end_y = self.y + self.size - 1
 	} else {
-		end_x = x + self.size
+		end_x = self.x + self.size - 1
 	}
 
 	return y >= self.y && y <= end_y && x >= self.x && x <= end_x
@@ -44,7 +44,10 @@ func (self *Ship) Covers(y uint8, x uint8) bool {
 
 func (self *Ship) Damage() {
 	self.health -= 1
-	self.sunk = self.health <= 0
+	if self.health <= 0 {
+		self.health = 0
+	}
+	self.Sunk = self.health <= 0
 }
 
 type Board struct {
@@ -173,31 +176,35 @@ func fire(sea *[10][10]uint8, y uint8, x uint8) error {
 }
 
 // Update our sea with the new attack, and check if it damaged any of our ships.
-// Returns true on hit, false on miss.
-func (self *Board) FireFriendly(y uint8, x uint8) (bool, error) {
+// Returns hit (true/false), sunk (true/false).
+func (self *Board) FireFriendly(y uint8, x uint8) (bool, bool, error) {
 	if y < 0 || y > 9 || x < 0 || x > 9 {
-		return false, errors.New("Coordinates out of bounds")
+		return false, false, errors.New("Coordinates out of bounds")
 	}
 	err := fire(&self.OurSea, y, x)
 	if err != nil {
-		return false, err
+		return false, false, err
 	}
 	// check if any of our ships were hit
 	for i := 0; i < len(self.OurFleet); i++ {
 		if self.OurFleet[i].Covers(y, x) {
-			self.OurFleet[i].health -= 1
-			return true, nil
+			alreadySunk := self.OurFleet[i].Sunk
+			self.OurFleet[i].Damage()
+			if self.OurFleet[i].Sunk && !alreadySunk {
+				return true, true, nil
+			}
+			return true, false, nil
 		}
 	}
 
-	return false, nil
+	return false, false, nil
 }
 
 // Checks if we have lost.
 // Since we don't actually have the opponents fleet, we rely on them to report a victory.
 func (self *Board) CheckLoss() bool {
 	for _, v := range self.OurFleet {
-		if !v.sunk {
+		if !v.Sunk {
 			return false
 		}
 	}

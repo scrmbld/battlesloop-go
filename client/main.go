@@ -15,11 +15,9 @@ import (
 // returns y, x
 func getUserPos() (uint8, uint8) {
 	reader := bufio.NewReader(os.Stdin)
-	var y, x uint8
 	// try over and over again until the user gives us valid input
 	for {
-		// x
-		fmt.Println("Enter a horizontal coordinate (A-J): ")
+		fmt.Println("Enter coordinates (e.g., A0, B6, J9): ")
 		text, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Print("Invalid input: ")
@@ -28,53 +26,21 @@ func getUserPos() (uint8, uint8) {
 		}
 		text = strings.Trim(text, "\n")
 
-		var colMap = map[string]uint8{
-			"A": 0,
-			"B": 1,
-			"C": 2,
-			"D": 3,
-			"E": 4,
-			"F": 5,
-			"G": 6,
-			"H": 7,
-			"I": 8,
-			"J": 9,
-		}
-		var valid bool
-		x, valid = colMap[text]
-		if !valid {
-			fmt.Println("Invalid input: Column not in range")
+		if len(text) != 2 {
+			fmt.Println("Invalid input: please enter inputs in the format {Row Letter}{Column Letter} e.g. A0")
 			continue
 		}
-		fmt.Print("\n")
 
-		// y
-		fmt.Println("Enter a vertical coordinate (0-9): ")
-		text, err = reader.ReadString('\n')
+		posString := text[:1] + "-" + text[1:]
+		pos, err := sloopNet.ParsePos(posString)
 		if err != nil {
-			fmt.Print("Invalid input: ")
 			fmt.Println(err)
 			continue
 		}
-		text = strings.Trim(text, "\n")
 
-		y_int, err := strconv.Atoi(text)
-		y = uint8(y_int)
-		if err != nil {
-			fmt.Print("Invalid input: ")
-			fmt.Println(err)
-			continue
-		}
-		if y < 0 || y > 9 {
-			fmt.Println("Invalid input: row not in range")
-			continue
-		}
-		fmt.Print("\n")
-
-		break
+		return pos[0], pos[1]
 	}
 
-	return y, x
 }
 
 func askShipLoc(board *sloopGame.Board, length uint8) {
@@ -149,7 +115,14 @@ func ourTurn(connection *sloopNet.GameConn, board *sloopGame.Board) (int, error)
 		return 3, err
 	}
 
-	if msgs[0] == "h" { // we hit
+	if msgs[0] == "a" { // we hit & sunk
+		displayPos := (posString[:1] + posString[2:])
+		fmt.Printf("We hit on %v, sinking their ship!\n", displayPos)
+
+		pos, _ := sloopNet.ParsePos(posString)
+		board.EnemySea[pos[0]][pos[1]] = 3
+		return 0, nil
+	} else if msgs[0] == "h" { // we hit
 		displayPos := (posString[:1] + posString[2:])
 		fmt.Printf("We hit on %v\n", displayPos)
 
@@ -165,6 +138,9 @@ func ourTurn(connection *sloopNet.GameConn, board *sloopGame.Board) (int, error)
 		board.EnemySea[pos[0]][pos[1]] = 1
 		return 0, nil
 	} else if msgs[0] == "g" && msgs[1] == "lose" { // we won
+		// assume this means that we hit
+		pos, _ := sloopNet.ParsePos(posString)
+		board.EnemySea[pos[0]][pos[1]] = 3
 		connection.SendMsg("_g_win:")
 		return 2, nil
 	} else if msgs[0] == "g" && msgs[1] == "end" { // no contest
@@ -193,25 +169,30 @@ func oppTurn(connection *sloopNet.GameConn, board *sloopGame.Board) (int, error)
 			return 3, err
 		}
 
-		hit, err := board.FireFriendly(pos[0], pos[1])
+		hit, sunk, err := board.FireFriendly(pos[0], pos[1])
 		if err != nil {
 			return 3, err
 		}
 
-		if hit {
-			fmt.Printf("Opponent hit %v%v\n", msg[1][:1], msg[1][2:])
-			// tell the opponent that they hit
-			connection.SendMsg("_h_" + msg[1] + ":")
-		} else {
-			fmt.Printf("Opponent missed %v%v\n", msg[1][:1], msg[1][2:])
-			// tell the opponent that they missed
-			connection.SendMsg("_m_" + msg[1] + ":")
-		}
-
 		// check win/loss
 		if board.CheckLoss() {
-			connection.SendMsg("_g_loss:")
+			connection.SendMsg("_g_lose:")
 			return 1, nil
+		}
+
+		// tell the opponent if they hit, missed, etc.
+		if hit && sunk {
+			fmt.Printf("Opponent hit %v%v, sinking our ship!\n", msg[1][:1], msg[1][2:])
+			// tell the opponent that they sunk our ship
+			connection.SendMsg("_a_" + msg[1] + ":")
+		} else if hit {
+			fmt.Printf("Opponent hit %v%v\n", msg[1][:1], msg[1][2:])
+			// tell the opponent that they hit our ship
+			connection.SendMsg("_h_" + msg[1] + ":")
+		} else {
+			fmt.Printf("Opponent missed on %v%v\n", msg[1][:1], msg[1][2:])
+			// tell the opponent that they missed
+			connection.SendMsg("_m_" + msg[1] + ":")
 		}
 
 	} else {
@@ -285,7 +266,7 @@ func playGame(connection *sloopNet.GameConn) error {
 
 		if board.WhoseTurn { // our turn
 			board.PrintBoard()
-			result, err := ourTurn(connection, &board)
+			result, err = ourTurn(connection, &board)
 			if err != nil {
 				return err
 			}
@@ -294,7 +275,7 @@ func playGame(connection *sloopNet.GameConn) error {
 			}
 		} else { // their turn
 			board.PrintBoard()
-			result, err := oppTurn(connection, &board)
+			result, err = oppTurn(connection, &board)
 			if err != nil {
 				return err
 			}
@@ -306,6 +287,8 @@ func playGame(connection *sloopNet.GameConn) error {
 
 		board.WhoseTurn = !board.WhoseTurn
 	}
+
+	fmt.Printf("Result: %v\n", result)
 
 	if result == 1 {
 		fmt.Println("You Lost...")

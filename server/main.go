@@ -49,7 +49,7 @@ func fireRandomly(board *sloopGame.Board) (int, int) {
 			continue
 		}
 
-		return y, x
+		return 1, 1
 	}
 }
 
@@ -79,22 +79,23 @@ func ourTurn(connection *sloopNet.GameConn, board *sloopGame.Board) (int, error)
 		return 3, err
 	}
 
-	if msgs[0] == "h" { // we hit
-		displayPos := (posString[:1] + posString[2:])
-		fmt.Printf("We hit on %v\n", displayPos)
-
+	if msgs[0] == "a" { // we hit & sunk
+		pos, _ := sloopNet.ParsePos(posString)
+		board.EnemySea[pos[0]][pos[1]] = 3
+		return 0, nil
+	} else if msgs[0] == "h" { // we hit
 		pos, _ := sloopNet.ParsePos(posString)
 		board.EnemySea[pos[0]][pos[1]] = 3
 		return 0, nil
 
 	} else if msgs[0] == "m" { // we missed
-		displayPos := (posString[:1] + posString[2:])
-		fmt.Printf("We missed on %v\n", displayPos)
-
 		pos, _ := sloopNet.ParsePos(posString)
 		board.EnemySea[pos[0]][pos[1]] = 1
 		return 0, nil
 	} else if msgs[0] == "g" && msgs[1] == "lose" { // we won
+		// assume this means that we hit
+		pos, _ := sloopNet.ParsePos(posString)
+		board.EnemySea[pos[0]][pos[1]] = 3
 		connection.SendMsg("_g_win:")
 		return 2, nil
 	} else if msgs[0] == "g" && msgs[1] == "end" { // no contest
@@ -123,25 +124,30 @@ func oppTurn(connection *sloopNet.GameConn, board *sloopGame.Board) (int, error)
 			return 3, err
 		}
 
-		hit, err := board.FireFriendly(pos[0], pos[1])
+		hit, sunk, err := board.FireFriendly(pos[0], pos[1])
 		if err != nil {
 			return 3, err
 		}
 
-		if hit {
-			fmt.Printf("Opponent hit %v%v\n", msg[1][:1], msg[1][2:])
-			// tell the opponent that they hit
-			connection.SendMsg("_h_" + msg[1] + ":")
-		} else {
-			fmt.Printf("Opponent missed %v%v\n", msg[1][:1], msg[1][2:])
-			// tell the opponent that they missed
-			connection.SendMsg("_m_" + msg[1] + ":")
-		}
-
 		// check win/loss
 		if board.CheckLoss() {
-			connection.SendMsg("_g_loss:")
+			connection.SendMsg("_g_lose:")
 			return 1, nil
+		}
+
+		// tell the opponent if they hit, missed, etc.
+		if hit && sunk {
+			fmt.Printf("Opponent hit %v%v, sinking our ship!\n", msg[1][:1], msg[1][2:])
+			// tell the opponent that they sunk our ship
+			connection.SendMsg("_a_" + msg[1] + ":")
+		} else if hit {
+			fmt.Printf("Opponent hit %v%v\n", msg[1][:1], msg[1][2:])
+			// tell the opponent that they hit our ship
+			connection.SendMsg("_h_" + msg[1] + ":")
+		} else {
+			fmt.Printf("Opponent missed on %v%v\n", msg[1][:1], msg[1][2:])
+			// tell the opponent that they missed
+			connection.SendMsg("_m_" + msg[1] + ":")
 		}
 
 	} else {
@@ -221,7 +227,7 @@ func startGame(connection *sloopNet.GameConn) error {
 
 		if board.WhoseTurn { // our turn
 			board.PrintBoard()
-			result, err := ourTurn(connection, &board)
+			result, err = ourTurn(connection, &board)
 			if err != nil {
 				return err
 			}
@@ -230,7 +236,7 @@ func startGame(connection *sloopNet.GameConn) error {
 			}
 		} else { // their turn
 			board.PrintBoard()
-			result, err := oppTurn(connection, &board)
+			result, err = oppTurn(connection, &board)
 			if err != nil {
 				return err
 			}

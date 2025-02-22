@@ -4,6 +4,94 @@ import (
 	"testing"
 )
 
+func TestShipCovers(t *testing.T) {
+	// ship starting at 3, 3 of length 4 in horizontal orientation
+	s1 := newShip(3, 3, 4, false)
+
+	// test hits
+	hit := s1.Covers(3, 3)
+	if !hit {
+		t.Fatalf("s1.Covers(3, 3) returned %v, should be true", hit)
+	}
+	hit = s1.Covers(3, 6)
+	if !hit {
+		t.Fatalf("s1.Covers(3, 6) returned %v, should be true", hit)
+	}
+
+	// test misses
+	hit = s1.Covers(4, 3)
+	if hit {
+		t.Fatalf("s1.Covers(4, 3) returned %v, should be false", hit)
+	}
+	hit = s1.Covers(2, 3)
+	if hit {
+		t.Fatalf("s1.Covers(2, 3) returned %v, should be false", hit)
+	}
+	hit = s1.Covers(4, 6)
+	if hit {
+		t.Fatalf("s1.Covers(4, 6) returned %v, should be false", hit)
+	}
+	hit = s1.Covers(2, 6)
+	if hit {
+		t.Fatalf("s1.Covers(2, 6) returned %v, should be false", hit)
+	}
+	hit = s1.Covers(3, 9)
+	if hit {
+		t.Fatalf("s1.Covers(3, 9) returned %v, should be false", hit)
+	}
+	hit = s1.Covers(3, 0)
+	if hit {
+		t.Fatalf("s1.Covers(3, 0) returned %v, should be false", hit)
+	}
+	hit = s1.Covers(3, 7)
+	if hit {
+		t.Fatalf("s1.Covers(3, 7) returned %v, should be false", hit)
+	}
+	hit = s1.Covers(3, 2)
+	if hit {
+		t.Fatalf("s1.Covers(3, 2) returned %v, should be false", hit)
+	}
+
+	// ship starting at 3, 3 of length 5 in vertical orientation
+	s2 := newShip(3, 3, 5, true)
+
+	// test hits
+	hit = s2.Covers(3, 3)
+	if !hit {
+		t.Fatalf("s2.Covers(3, 3) returned %v, should be true", hit)
+	}
+	hit = s2.Covers(7, 3)
+	if !hit {
+		t.Fatalf("s2.Covers(7, 3) returned %v, should be true", hit)
+	}
+
+	// test misses
+	hit = s2.Covers(3, 4)
+	if hit {
+		t.Fatalf("s2.Covers(3, 4) returned %v, should be false", hit)
+	}
+	hit = s2.Covers(3, 2)
+	if hit {
+		t.Fatalf("s2.Covers(3, 2) returned %v, should be false", hit)
+	}
+	hit = s2.Covers(6, 4)
+	if hit {
+		t.Fatalf("s2.Covers(6, 4) returned %v, should be false", hit)
+	}
+	hit = s2.Covers(6, 2)
+	if hit {
+		t.Fatalf("s2.Covers(6, 2) returned %v, should be false", hit)
+	}
+	hit = s2.Covers(8, 3)
+	if hit {
+		t.Fatalf("s2.Covers(8, 3) returned %v, should be false", hit)
+	}
+	hit = s2.Covers(2, 3)
+	if hit {
+		t.Fatalf("s2.Covers(2, 3) returned %v, should be false", hit)
+	}
+}
+
 func TestFire(t *testing.T) {
 	var sea [10][10]uint8
 	/* Things the fire function should be able to handle:

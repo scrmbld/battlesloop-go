@@ -13,10 +13,6 @@ contains a row (letter) and column (integer)
 
 in messages, takes the form: `<row>-<column>:`
 
-#### Ship Identifier
-consists of a single integer
-`<int>:`
-
 ### Message Type
 
 #### Positional Messages
@@ -29,9 +25,8 @@ types:
 - `m`: miss
 - `f`: fire
 
-#### Ship Messages
 sank -- `a` (for abyss)
-- example: `_a_10:` -- sank ship # 10
+- example: `_a_A-7:` -- sank ship that was hit on A7
 
 #### Game State Messages
 `g` for game
