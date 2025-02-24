@@ -226,6 +226,8 @@ func playGame(connection *sloopNet.GameConn, first bool) error {
 		return errors.New("Opponent sent unexpected message")
 	}
 
+	fmt.Println("opponent agreed to begin game")
+
 	var board sloopGame.Board
 
 	if first {
@@ -258,10 +260,10 @@ func playGame(connection *sloopNet.GameConn, first bool) error {
 		fmt.Println("Unexpected response")
 		return errors.New("Unexpected response")
 	} else if first && msg[0] != "g" && msg[1] != "last" {
+		fmt.Println("Unexpected response")
 		return errors.New("Unexpected response")
 	}
-
-	board.WhoseTurn = false
+	board.WhoseTurn = first
 
 	fmt.Println("Connection Successful! Beginning game...")
 	board.PrintBoard()

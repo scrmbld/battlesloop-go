@@ -36,6 +36,11 @@ func (self *GameConn) Quit() {
 	self.msgs = nil
 }
 
+// return the remote address of the GameConn socket
+func (self *GameConn) RemoteAddr() string {
+	return self.sock.RemoteAddr().String()
+}
+
 // read a ':' delimited message
 func (self *GameConn) ReadMsg() error {
 
@@ -67,10 +72,10 @@ func (self *GameConn) ReadMsg() error {
 
 func (self *GameConn) PopMsg() ([]string, error) {
 	// peek
-	front := self.msgs[0]
-	if front == nil {
+	if len(self.msgs) < 1 {
 		return nil, errors.New("No messages in msg queue")
 	}
+	front := self.msgs[0]
 
 	// pop
 	// this is actually an accepted way to do this in go (even though I don't like it)

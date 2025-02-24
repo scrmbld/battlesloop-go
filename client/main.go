@@ -79,10 +79,12 @@ func main() {
 					fmt.Println(err)
 					return
 				}
+				fmt.Println("listening")
 				// tell server that we are listening
 				connection.SendMsg("_s_ready:")
 
 				sock, err := l.Accept()
+				fmt.Println("opponnent connected successfully")
 				if err != nil {
 					fmt.Println(err)
 					return
@@ -110,7 +112,8 @@ func main() {
 
 				// connect to opponent
 				var opponent sloopNet.GameConn
-				err = opponent.Connect(parts[1], ":8081")
+				fmt.Println(parts[1])
+				err = opponent.Connect(parts[1], "8081")
 				if err != nil {
 					fmt.Println(err)
 					return
