@@ -32,6 +32,7 @@ func getUserPos() (uint8, uint8) {
 		}
 
 		posString := text[:1] + "-" + text[1:]
+		posString = strings.ToUpper(posString)
 		pos, err := sloopNet.ParsePos(posString)
 		if err != nil {
 			fmt.Println(err)

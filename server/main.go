@@ -42,7 +42,6 @@ func (self *PlayerQueue) PopPair() (*sloopNet.GameConn, *sloopNet.GameConn, erro
 	self.length -= 2
 	return ps[0], ps[1], nil
 }
-
 func matchMaker() {
 	for {
 		p1, p2, err := queue.PopPair()
@@ -97,6 +96,8 @@ func main() {
 		return
 	}
 
+	fmt.Println("Listening on port 8080")
+
 	go matchMaker()
 
 	for {
@@ -131,6 +132,7 @@ func handleJoin(sock net.Conn) {
 	}
 
 	if msg[0] == "s" && msg[1] == "computer" {
+		fmt.Println("starting computer game with ", sock.RemoteAddr())
 		// begin match vs. computer
 		err := connection.SendMsg("_g_begin:")
 		if err != nil {

@@ -196,10 +196,10 @@ func startGame(connection *sloopNet.GameConn) error {
 	ships := []int{5, 4, 3, 3, 2}
 	for _, v := range ships {
 		placeShip(&board, v)
-
-		// draw the new state of the board
-		board.PrintBoard()
 	}
+
+	// draw the new state of the board
+	board.PrintBoard()
 
 	// tell the client that we are done with setup
 	err = connection.SendMsg("_g_ready:")

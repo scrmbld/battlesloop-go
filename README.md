@@ -1,54 +1,36 @@
-## Battlesloop Protocol
+# Battlesloop
 
-We need to be able to send/receive fires, hits, and misses at certain board positions
+This project aims to bring the classic tabletop game Battleship to the CLI using Go. For a(n incomplete) description of the messaging protocol, see [PROTOCOL.md](PROTOCOL.md)
 
-In general, we use `:` as delimiters and `_` followed by a letter followed by another `_` to indicate data types
+## Usage
 
-### Components Types -- Messages may contain these
+1. If you haven't already, [install Go](https://go.dev/doc/install) on your system.
 
-#### Board Position
-contains a row (letter) and column (integer)
-- Row: \[A-J\]
-- Column: \[1-10\]
+2. Clone the repository.  
+`$ git clone https://github.com/scrmbld/battlesloop-go.git`
 
-in messages, takes the form: `<row>-<column>:`
+### Running the server
 
-### Message Type
+This step is not necessary if you wish to connect to an existing server.
 
-#### Positional Messages
-format -- `_type_position` 
-- type is in lowercase letters
-example: `_h_A-7:` -- hit on A7
+```
+$ cd battlesloop-go/server
+$ go run .
+```
 
-types:
-- `h`: hit
-- `m`: miss
-- `f`: fire
+To connect to a server, see [Running the client](#running-the-client)
 
-sank -- `a` (for abyss)
-- example: `_a_A-7:` -- sank ship that was hit on A7
+### Running the client
 
-#### Game State Messages
-`g` for game
+```
+$ cd battlesloop-go/client
+$ go run .
+```
 
-win, lose, end (no contest or game ending for some other reason)
-`_g_win:`
-`_g_lose:`
-`_g_end:`
+Once the client is running, you will be prompted to enter the address of the server. If you wish to run a server yourself, see [Running the server](#running-the-server).
 
-I want to go first, I want to go second, I don't have a preference
-`_g_first:`
-`_g_last:`
-`_g_undecided:`
-
-Ready to begin next phase of the game (i.e., go from ship placement -> firing)
-`_g_ready:`
-
-#### Connection-Related Messages
-`c` for connection
-
-end, heartbeat, your turn, my turn
-`_c_end:`
-`_c_mturn:`
-`_c_yturn:`
-
+The following demonstrates connecting to a server running on the local machine.  
+```
+Enter the ip address of the server you would like to connect to:
+> localhost
+```
